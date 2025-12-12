@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự đoán BMI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg text-gray-800">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-900">Dự đoán chỉ số BMI</h1>
+        <form id="bmiForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="age" class="block mb-2 font-semibold">Tuổi:</label>
+                    <input type="number" id="age" name="age" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="gender" class="block mb-2 font-semibold">Giới tính:</label>
+                    <select id="gender" name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Male">Nam</option>
+                        <option value="Female">Nữ</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="height_cm" class="block mb-2 font-semibold">Chiều cao (cm):</label>
+                    <input type="number" id="height_cm" name="height_cm" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="weight_kg" class="block mb-2 font-semibold">Cân nặng (kg):</label>
+                    <input type="number" id="weight_kg" name="weight_kg" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="years_experience" class="block mb-2 font-semibold">Số năm kinh nghiệm:</label>
+                    <input type="number" id="years_experience" name="years_experience" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="salary" class="block mb-2 font-semibold">Mức lương ($):</label>
+                    <input type="number" id="salary" name="salary" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="job" class="block mb-2 font-semibold">Nghề nghiệp:</label>
+                    <select id="job" name="job" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Data Scientist">Khoa học dữ liệu</option>
+                        <option value="Software Engineer">Kỹ sư phần mềm</option>
+                        <option value="Doctor">Bác sĩ</option>
+                        <option value="Teacher">Giáo viên</option>
+                        <option value="Artist">Họa sĩ</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="education_level" class="block mb-2 font-semibold">Trình độ học vấn:</label>
+                    <select id="education_level" name="education_level" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="PhD">Tiến sĩ</option>
+                        <option value="Master's">Thạc sĩ</option>
+                        <option value="Bachelor's">Cử nhân</option>
+                        <option value="High School">Trung học</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
+                Dự đoán
+            </button>
+        </form>
+        <div id="result-section" class="mt-8">
+            <div id="loading-indicator" class="hidden text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mx-auto"></div>
+                <p class="mt-2 text-gray-600">Đang dự đoán...</p>
+            </div>
+            <div id="prediction-result" class="hidden bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h2 class="text-xl font-bold mb-2 text-blue-800">Kết quả dự đoán</h2>
+                <p>Dựa trên thông tin bạn cung cấp, dự đoán phân loại BMI của bạn là: <strong id="prediction-text" class="text-blue-600"></strong></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('bmiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const predictionResult = document.getElementById('prediction-result');
+            const predictionText = document.getElementById('prediction-text');
+
+            // Hiển thị loading, ẩn kết quả cũ
+            loadingIndicator.classList.remove('hidden');
+            predictionResult.classList.add('hidden');
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    predictionText.textContent = data.prediction;
+                    predictionResult.classList.remove('hidden');
+                } else {
+                    predictionText.textContent = `Lỗi: ${data.error}`;
+                    predictionResult.classList.remove('hidden');
+                }
+            } catch (error) {
+                predictionText.textContent = `Lỗi mạng: ${error.message}`;
+                predictionResult.classList.remove('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

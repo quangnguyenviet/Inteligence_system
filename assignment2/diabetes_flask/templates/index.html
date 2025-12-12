@@ -1,0 +1,78 @@
+<!--Nguyen Viet Quang-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diabetes Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="card shadow-lg p-4 rounded-4">
+      <h2 class="text-center text-primary mb-4">🩺 Diabetes Prediction App</h2>
+
+      <form id="predictForm" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Glucose</label>
+          <input type="number" step="any" class="form-control" name="Glucose" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">BMI</label>
+          <input type="number" step="any" class="form-control" name="BMI" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Age</label>
+          <input type="number" class="form-control" name="Age" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Pregnancies</label>
+          <input type="number" class="form-control" name="Pregnancies" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Skin Thickness</label>
+          <input type="number" step="any" class="form-control" name="SkinThickness" required>
+        </div>
+
+        <div class="col-12 text-center mt-3">
+          <button type="submit" class="btn btn-primary btn-lg px-4">Predict</button>
+        </div>
+      </form>
+
+      <!-- Kết quả dự đoán -->
+      <div id="resultBox" class="alert alert-info text-center mt-4 d-none rounded-3 shadow-sm"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("predictForm").addEventListener("submit", async function(e){
+      e.preventDefault(); // ngăn reload
+
+      // Lấy dữ liệu form
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      // Gửi request đến Flask API
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      // Hiển thị kết quả
+      const resultBox = document.getElementById("resultBox");
+      if(result.error){
+        resultBox.classList.remove("d-none", "alert-info");
+        resultBox.classList.add("alert-danger");
+        resultBox.innerHTML = "❌ Error: " + result.error;
+      } else {
+        resultBox.classList.remove("d-none", "alert-danger");
+        resultBox.classList.add("alert-info");
+        resultBox.innerHTML = `<h4>${result.result}</h4><p>Confidence: <strong>${result.confidence}</strong></p>`;
+      }
+    });
+  </script>
+</body>
+</html>
